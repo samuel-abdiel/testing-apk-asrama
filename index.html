@@ -199,6 +199,7 @@ button.outline{background:none;color:var(--bad);border:1px solid var(--bd)}
     <div class="qrbox"><div id="qr"></div></div>
     <p class="sub" id="gInfo"></p>
     <button class="ghost" id="bBack">Kembali ke dashboard</button>
+    <button class="ghost hide" id="bOut">Keluar akun</button>
   </div>
 </div>
 
@@ -211,7 +212,7 @@ const API_URL = 'https://script.google.com/macros/s/AKfycbz2UByQH5qgZ49bF7haii3m
 
 const params = new URLSearchParams(location.search);
 const MODE = params.get('gerbang') ? 'gerbang' : '';
-let scanTok = params.get('s') || '', pass = '', timer = null, reload = () => {}, scanner = null, busy = false;
+let scanTok = params.get('s') || '', pass = '', timer = null, reload = () => {}, scanner = null, busy = false, ROLE = '';
 const $ = id => document.getElementById(id);
 const esc = s => String(s == null ? '' : s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const store = {
@@ -242,6 +243,8 @@ async function start(){
 async function home(t){
   if (scanTok){ const g = scanTok; scanTok = ''; history.replaceState(null, '', location.pathname); await handleScan(g, true); }
   const s = await api('getStatus', t);
+  ROLE = s.role;
+  if (s.role === 'satpam') return gateView(t);
   if (s.role === 'admin') return MODE === 'gerbang' ? gateView(t) : adminView(t);
   mhsView(s);
 }
@@ -384,6 +387,8 @@ document.body.addEventListener('click', async e => {
 // ---------- Layar gerbang ----------
 async function gateView(t){
   show('vGate'); note('');
+  $('bBack').classList.toggle('hide', ROLE === 'satpam');
+  $('bOut').classList.toggle('hide', ROLE !== 'satpam');
   const draw = async () => {
     try {
       const r = await api('gateToken', t), q = $('qr'); q.innerHTML = '';
@@ -394,6 +399,7 @@ async function gateView(t){
   await draw(); clearInterval(timer); timer = setInterval(draw, 30000);
 }
 document.querySelector('[data-gate]').onclick = () => gateView(store.get());
+$('bOut').onclick = () => { if (confirm('Keluar dari akun gerbang?')) logout(); };
 $('bBack').onclick = () => { clearInterval(timer); home(store.get()); };
 
 // ---------- Login ----------
