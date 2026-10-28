@@ -96,6 +96,7 @@ button.outline{background:none;color:var(--bad);border:1px solid var(--bd)}
 .tabs{position:fixed;bottom:0;left:50%;transform:translateX(-50%);width:100%;max-width:560px;display:flex;background:var(--card);border-top:1px solid var(--bd);padding:6px 8px calc(6px + env(safe-area-inset-bottom,0px));z-index:20}
 .tab{flex:1;margin:0;display:flex;flex-direction:column;align-items:center;gap:2px;padding:6px;background:none;color:var(--mu);font-size:.78rem;font-weight:500;border-radius:8px}
 .tab.on{color:var(--ac);font-weight:700}
+.gatebox{max-width:440px;margin:0 auto;text-align:center;padding:24px}
 .hide{display:none!important}
 </style>
 </head>
@@ -165,18 +166,19 @@ button.outline{background:none;color:var(--bad);border:1px solid var(--bd)}
     <aside class="side" id="side">
       <div class="brand"><span class="logo">A</span><div><b>Asrama</b><small>STT Abdiel</small></div></div>
       <nav>
-        <button class="nav on" data-p="ringkasan"><svg class="ic" viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/></svg> Ringkasan</button>
-        <button class="nav" data-p="penghuni"><svg class="ic" viewBox="0 0 24 24"><circle cx="9" cy="7" r="4"/><path d="M2 21v-2a5 5 0 0 1 5-5h4a5 5 0 0 1 5 5v2"/></svg> Penghuni</button>
-        <button class="nav" data-p="riwayat"><svg class="ic" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg> Riwayat</button>
-        <button class="nav" data-gate><svg class="ic" viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><path d="M14 14h3v3h-3zM20 14v3M14 20h3M20 20h1"/></svg> Layar gerbang</button>
+        <button class="nav on" data-p="ringkasan" data-admin><svg class="ic" viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/></svg> Ringkasan</button>
+        <button class="nav" data-p="penghuni" data-admin><svg class="ic" viewBox="0 0 24 24"><circle cx="9" cy="7" r="4"/><path d="M2 21v-2a5 5 0 0 1 5-5h4a5 5 0 0 1 5 5v2"/></svg> Penghuni</button>
+        <button class="nav" data-p="riwayat" data-admin><svg class="ic" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg> Riwayat</button>
+        <button class="nav" data-p="gerbang"><svg class="ic" viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><path d="M14 14h3v3h-3zM20 14v3M14 20h3M20 20h1"/></svg> Layar gerbang</button>
       </nav>
+      <div class="mu" id="who" style="padding:0 12px 8px;font-size:.85rem"></div>
       <button class="nav" data-logout><svg class="ic" viewBox="0 0 24 24"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4M16 17l5-5-5-5M21 12H9"/></svg> Keluar akun</button>
     </aside>
     <main class="main">
       <header class="bar">
         <button class="burger" id="bBurger" aria-label="Buka menu">&#9776;</button>
         <div><h1 id="pTitle">Ringkasan</h1><p class="sub" id="pSub"></p></div>
-        <div class="rt2"><span class="pill p-n" id="jm"></span><span class="mu" id="upd"></span><button class="mini" id="bRefresh">Muat ulang</button></div>
+        <div class="rt2"><span class="pill p-n" id="jm" data-admin></span><span class="mu" id="upd" data-admin></span><button class="mini" id="bRefresh" data-admin>Muat ulang</button></div>
       </header>
       <section id="pg-ringkasan">
         <div class="stats" id="stats"></div>
@@ -190,16 +192,16 @@ button.outline{background:none;color:var(--bad);border:1px solid var(--bd)}
         <div class="panel" id="tPenghuni"></div>
       </section>
       <section id="pg-riwayat" class="hide"><div class="panel" id="tRiwayat"></div></section>
+      <section id="pg-gerbang" class="hide">
+        <div class="panel gatebox">
+          <h2 style="border:0;padding:0 0 4px">Scan untuk keluar atau masuk</h2>
+          <p class="sub">QR berganti otomatis tiap 30 detik. Biarkan halaman ini tetap terbuka.</p>
+          <div class="qrbox"><div id="qr"></div></div>
+          <p class="sub" id="gInfo" style="margin:0"></p>
+        </div>
+      </section>
     </main>
     <div class="scrim hide" id="scrim"></div>
-  </div>
-  <div id="vGate" class="hide" style="text-align:center">
-    <h1>Scan untuk keluar atau masuk</h1>
-    <p class="sub">QR berganti otomatis tiap 30 detik. Biarkan layar ini tetap terbuka.</p>
-    <div class="qrbox"><div id="qr"></div></div>
-    <p class="sub" id="gInfo"></p>
-    <button class="ghost" id="bBack">Kembali ke dashboard</button>
-    <button class="ghost hide" id="bOut">Keluar akun</button>
   </div>
 </div>
 
@@ -228,10 +230,10 @@ async function api(fn, ...args){
   if (!j.ok) throw new Error(j.error);
   return j.data;
 }
-function show(v){ ['vLogin','vMhs','vAdmin','vGate'].forEach(x => $(x).classList.toggle('hide', x !== v)); $('app').classList.toggle('full', v === 'vAdmin'); }
+function show(v){ ['vLogin','vMhs','vAdmin'].forEach(x => $(x).classList.toggle('hide', x !== v)); $('app').classList.toggle('full', v === 'vAdmin'); }
 function note(t, err){ $('msg').innerHTML = t ? '<div class="msg' + (err ? ' err' : '') + '">' + esc(t) + '</div>' : ''; }
 const durasi = m => m < 60 ? m + ' mnt' : Math.floor(m/60) + ' j ' + (m%60) + ' mnt';
-function logout(){ store.del(); clearInterval(timer); stopScan(); note(''); show('vLogin'); }
+function logout(){ store.del(); clearInterval(timer); clearInterval(gtimer); stopScan(); note(''); show('vLogin'); }
 document.querySelectorAll('[data-logout]').forEach(b => b.onclick = logout);
 
 async function start(){
@@ -244,8 +246,7 @@ async function home(t){
   if (scanTok){ const g = scanTok; scanTok = ''; history.replaceState(null, '', location.pathname); await handleScan(g, true); }
   const s = await api('getStatus', t);
   ROLE = s.role;
-  if (s.role === 'satpam') return gateView(t);
-  if (s.role === 'admin') return MODE === 'gerbang' ? gateView(t) : adminView(t);
+  if (s.role === 'satpam' || s.role === 'admin') return adminView(t);
   mhsView(s);
 }
 
@@ -317,7 +318,7 @@ $('bKeluar').onclick = async () => {
 
 // ---------- Admin ----------
 let AD = null, page = 'ringkasan', filt = 'semua';
-const TITLES = { ringkasan: ['Ringkasan', 'Kondisi asrama saat ini'], penghuni: ['Penghuni', 'Semua penghuni dan statusnya'], riwayat: ['Riwayat', '200 aktivitas terakhir'] };
+const TITLES = { ringkasan: ['Ringkasan', 'Kondisi asrama saat ini'], penghuni: ['Penghuni', 'Semua penghuni dan statusnya'], riwayat: ['Riwayat', '200 aktivitas terakhir'], gerbang: ['QR Gerbang', 'Tunjukkan QR ini kepada penghuni yang akan keluar atau masuk'] };
 const stat = (l, n, c) => '<div class="stat ' + c + '"><b>' + n + '</b><span>' + l + '</span></div>';
 const tbl = (hd, rows) => '<div class="tw"><table><thead><tr>' + hd.map(x => '<th>' + x + '</th>').join('') + '</tr></thead><tbody>' + rows.join('') + '</tbody></table></div>';
 const pill = x => x.luar ? (x.telat ? '<span class="pill p-bad">Lewat jam malam</span>' : '<span class="pill p-out">Di luar</span>') : '<span class="pill p-in">Di asrama</span>';
@@ -352,13 +353,20 @@ async function loadLogs(){
 const closeSide = () => { $('side').classList.remove('open'); $('scrim').classList.add('hide'); };
 function go(p){
   page = p;
-  ['ringkasan', 'penghuni', 'riwayat'].forEach(k => $('pg-' + k).classList.toggle('hide', k !== p));
+  ['ringkasan', 'penghuni', 'riwayat', 'gerbang'].forEach(k => $('pg-' + k).classList.toggle('hide', k !== p));
   document.querySelectorAll('.nav[data-p]').forEach(b => b.classList.toggle('on', b.dataset.p === p));
   $('pTitle').textContent = TITLES[p][0]; $('pSub').textContent = TITLES[p][1];
-  closeSide(); if (p === 'riwayat') loadLogs();
+  closeSide();
+  if (p === 'riwayat') loadLogs();
+  if (p === 'gerbang') gateStart(); else clearInterval(gtimer);
 }
 async function adminView(t){
-  show('vAdmin'); go(page);
+  show('vAdmin');
+  const sat = ROLE === 'satpam';
+  document.querySelectorAll('[data-admin]').forEach(e => e.classList.toggle('hide', sat));
+  $('who').textContent = sat ? 'Satpam' : 'Kepala asrama';
+  if (sat){ clearInterval(timer); return go('gerbang'); }
+  go(MODE === 'gerbang' ? 'gerbang' : page);
   const load = async () => {
     try {
       AD = await api('adminData', t);
@@ -384,23 +392,18 @@ document.body.addEventListener('click', async e => {
   catch(err){ note(err.message, true); }
 });
 
-// ---------- Layar gerbang ----------
-async function gateView(t){
-  show('vGate'); note('');
-  $('bBack').classList.toggle('hide', ROLE === 'satpam');
-  $('bOut').classList.toggle('hide', ROLE !== 'satpam');
+// ---------- QR gerbang (admin dan satpam) ----------
+let gtimer = null;
+async function gateStart(){
   const draw = async () => {
     try {
-      const r = await api('gateToken', t), q = $('qr'); q.innerHTML = '';
-      new QRCode(q, { text: location.origin + location.pathname + '?s=' + encodeURIComponent(r.token), width: 280, height: 280, correctLevel: QRCode.CorrectLevel.L });
+      const r = await api('gateToken', store.get()), q = $('qr'); q.innerHTML = '';
+      new QRCode(q, { text: location.origin + location.pathname + '?s=' + encodeURIComponent(r.token), width: 300, height: 300, correctLevel: QRCode.CorrectLevel.L });
       $('gInfo').textContent = 'Diperbarui ' + new Date().toLocaleTimeString('id-ID');
     } catch(e){ note(e.message, true); }
   };
-  await draw(); clearInterval(timer); timer = setInterval(draw, 30000);
+  clearInterval(gtimer); await draw(); gtimer = setInterval(draw, 30000);
 }
-document.querySelector('[data-gate]').onclick = () => gateView(store.get());
-$('bOut').onclick = () => { if (confirm('Keluar dari akun gerbang?')) logout(); };
-$('bBack').onclick = () => { clearInterval(timer); home(store.get()); };
 
 // ---------- Login ----------
 $('bLogin').onclick = async () => {
