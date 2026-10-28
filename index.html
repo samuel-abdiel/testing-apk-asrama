@@ -277,8 +277,14 @@ $('bPin').onclick = async () => {
   const lama = $('pLama').value, baru = $('pBaru').value;
   if (baru !== $('pUlang').value) return note('PIN baru dan konfirmasinya tidak sama.', true);
   const b = $('bPin'); b.disabled = true; note('');
-  try { note(await api('gantiPin', store.get(), lama, baru)); ['pLama', 'pBaru', 'pUlang'].forEach(i => $(i).value = ''); }
-  catch(e){ note(e.message, true); }
+  try {
+    const pesan = await api('gantiPin', store.get(), lama, baru);
+    ['pLama', 'pBaru', 'pUlang'].forEach(i => $(i).value = '');
+    const nim = $('pNim').textContent;
+    tab('home'); logout();
+    $('nim').value = nim; $('pin').value = '';
+    note(pesan + ' Silakan login dengan PIN baru.');
+  } catch(e){ note(e.message, true); }
   window.scrollTo(0, 0); b.disabled = false;
 };
 async function handleScan(g, skipRefresh){
