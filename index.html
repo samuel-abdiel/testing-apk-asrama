@@ -324,7 +324,7 @@ $('bKeluar').onclick = async () => {
 
 // ---------- Admin ----------
 let AD = null, page = 'ringkasan', filt = 'semua';
-const TITLES = { ringkasan: ['Ringkasan', 'Kondisi asrama saat ini'], penghuni: ['Penghuni', 'Semua penghuni dan statusnya'], riwayat: ['Riwayat', '200 aktivitas terakhir'], gerbang: ['QR Gerbang', 'Tunjukkan QR ini kepada penghuni yang akan keluar atau masuk'] };
+const TITLES = { ringkasan: ['Ringkasan', 'Kondisi asrama saat ini'], penghuni: ['Penghuni', 'Semua penghuni dan statusnya'], riwayat: ['Riwayat', 'Aktivitas terbaru, 200 per muatan'], gerbang: ['QR Gerbang', 'Tunjukkan QR ini kepada penghuni yang akan keluar atau masuk'] };
 const stat = (l, n, c) => '<div class="stat ' + c + '"><b>' + n + '</b><span>' + l + '</span></div>';
 const tbl = (hd, rows) => '<div class="tw"><table><thead><tr>' + hd.map(x => '<th>' + x + '</th>').join('') + '</tr></thead><tbody>' + rows.join('') + '</tbody></table></div>';
 const pill = x => x.luar ? (x.telat ? '<span class="pill p-bad">Lewat jam malam</span>' : '<span class="pill p-out">Di luar</span>') : '<span class="pill p-in">Di asrama</span>';
@@ -347,15 +347,23 @@ function renderPenghuni(){
     l.map(x => '<tr class="' + (x.telat ? 'late' : '') + '"><td>' + who(x) + '</td><td>' + esc(x.kamar) + '</td><td>' + pill(x) + '</td><td>' + (x.luar ? esc(x.jam) + ' · ' + durasi(x.menit) : '-') + '</td><td>' + (esc(x.alasan) || '-') + '</td><td>' + aksi(x) + '</td></tr>'))
     : '<div class="empty">Tidak ada data yang cocok.</div>';
 }
-async function loadLogs(){
+let logRows = [], logNext = 0;
+async function loadLogs(more){
   try {
-    const r = await api('logData', store.get());
-    const cls = x => x.aksi === 'KELUAR' ? 'p-out' : x.aksi === 'MASUK' ? (x.ket === 'TERLAMBAT' ? 'p-bad' : 'p-in') : 'p-n';
-    $('tRiwayat').innerHTML = r.length ? tbl(['Waktu', 'Nama', 'Aksi', 'Keterangan'],
-      r.map(x => '<tr><td>' + esc(x.waktu) + '</td><td>' + esc(x.nama) + '</td><td><span class="pill ' + cls(x) + '">' + esc(x.aksi) + '</span></td><td>' + esc([x.alasan, x.ket].filter(Boolean).join(' · ')) + '</td></tr>'))
-      : '<div class="empty">Belum ada aktivitas.</div>';
+    const r = await api('logData', store.get(), more ? logNext : 0);
+    logRows = more ? logRows.concat(r.rows) : r.rows; logNext = r.next;
+    renderLogs();
   } catch(e){ note(e.message, true); }
 }
+function renderLogs(){
+  const cls = x => x.aksi === 'KELUAR' ? 'p-out' : x.aksi === 'MASUK' ? (x.ket === 'TERLAMBAT' ? 'p-bad' : 'p-in') : 'p-n';
+  $('tRiwayat').innerHTML = logRows.length ? tbl(['Waktu', 'Nama', 'Aksi', 'Keterangan'],
+    logRows.map(x => '<tr><td>' + esc(x.waktu) + '</td><td>' + esc(x.nama) + '</td><td><span class="pill ' + cls(x) + '">' + esc(x.aksi) + '</span></td><td>' + esc([x.alasan, x.ket].filter(Boolean).join(' · ')) + '</td></tr>'))
+    + (logNext ? '<div class="empty"><button class="mini" id="bMore" style="margin:0">Muat lebih banyak</button></div>' : '<div class="empty">Semua riwayat sudah ditampilkan.</div>')
+    : '<div class="empty">Belum ada aktivitas.</div>';
+}
+$('tRiwayat').onclick = e => { if (e.target.id === 'bMore') loadLogs(true); };
+document.addEventListener('visibilitychange', () => { if (!document.hidden && ROLE === 'admin' && page !== 'gerbang') reload(); });
 const closeSide = () => { $('side').classList.remove('open'); $('scrim').classList.add('hide'); };
 function go(p){
   page = p;
@@ -363,7 +371,7 @@ function go(p){
   document.querySelectorAll('.nav[data-p]').forEach(b => b.classList.toggle('on', b.dataset.p === p));
   $('pTitle').textContent = TITLES[p][0]; $('pSub').textContent = TITLES[p][1];
   closeSide();
-  if (p === 'riwayat') loadLogs();
+  if (p === 'riwayat') loadLogs(false);
   if (p === 'gerbang') gateStart(); else clearInterval(gtimer);
 }
 async function adminView(t){
@@ -378,10 +386,10 @@ async function adminView(t){
       AD = await api('adminData', t);
       $('jm').textContent = 'Jam malam hari ini ' + AD.jamMalam;
       $('upd').textContent = 'Diperbarui ' + new Date().toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' });
-      renderRingkasan(); renderPenghuni(); if (page === 'riwayat') loadLogs();
+      renderRingkasan(); renderPenghuni();
     } catch(e){ note(e.message, true); }
   };
-  reload = load; await load(); clearInterval(timer); timer = setInterval(load, 30000);
+  reload = load; await load(); clearInterval(timer); timer = setInterval(() => { if (!document.hidden) load(); }, 30000);
 }
 document.querySelectorAll('.nav[data-p]').forEach(b => b.onclick = () => go(b.dataset.p));
 $('bBurger').onclick = () => { $('side').classList.add('open'); $('scrim').classList.remove('hide'); };
